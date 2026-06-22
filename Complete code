@@ -1,0 +1,341 @@
+#include <iostream> 
+#include <fstream> //used for file operations 
+#include <string> 
+#include <chrono> // used for accurate time measurement 
+ 
+using namespace std; 
+using namespace chrono;//contains functions for handling time related operations. 
+const int ARRAY_SIZE = 10000; //set a fixed constant array of size 100000 
+const string DIRECTORY_PATH = "C:/Users/Jannat Waqass/Desktop/"; //Edit the file 
+directory 
+void readArrayFromFile(int arr[], const string& filename) { //reads integer data from a 
+file and stores the data in an array. 
+    ifstream file(DIRECTORY_PATH + filename); // opens the filename by joining it with 
+the directory for the file path 
+    if (!file) { //if the file is not found, the following error message is displayed. 
+        cerr << "Error opening file. " << endl; 
+        exit(1); 
+    } 
+    for (int i = 0; i < ARRAY_SIZE; i++) { //reads integers from the file and stores it 
+in the array. 
+        file >> arr[i]; 
+    } 
+    file.close(); //the file is then closed 
+} 
+// function declarations of the 6 sorting algorithms 
+void insertionSort(int arr[], const int size); 
+void insertionSortV2(int arr[], const int size); 
+void quickSort(int arr[], int start, int end); 
+void quickSortV2A(int arr[], int start, int end); 
+void quickSortV2B(int arr[], int start, int end); 
+void countingSort(int arr[], const int size); 
+void measureTimeAndPrintResults(int arr[], const int size, const string& algorithm, const 
+string& subAlgorithm, void (*sortFunc)(int[], const int)) { 
+    high_resolution_clock::time_point t1, t2; // to calculate time 
+    // start calculating time before calling sort function 
+    t1 = high_resolution_clock::now(); 
+    // call the sort function 
+    sortFunc(arr, size); 
+    // stop calculating time after sorted 
+    t2 = high_resolution_clock::now(); 
+    // calculate the difference in time 
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1); 
+    // print the results 
+    cout << algorithm << " - " << subAlgorithm << " - Time taken to sort: " << 
+time_span.count() << " seconds." << endl; 
+} 
+void measureTimeAndPrintResults2(int arr[], const int size, const string& algorithm, 
+const string& subAlgorithm, void (*sortFunc)(int[], int, int)) { 
+    high_resolution_clock::time_point t1, t2; 
+    // start calculating time before calling sort function 
+    t1 = high_resolution_clock::now(); 
+    // call the sort function 
+ 
+    sortFunc(arr, 0, size - 1); 
+    // stop calculating time after sorted 
+    t2 = high_resolution_clock::now(); 
+    // calculate the difference in time 
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1); 
+    // print the results 
+    cout << algorithm << " - " << subAlgorithm << " - Time taken to sort: " << 
+time_span.count() << " seconds." << endl; 
+} 
+int main() { 
+ 
+    // main user interface 
+    cout << "This program reads data from text files and sorts the arrays using different 
+sorting algorithms." << endl; 
+    cout << endl; 
+    string filename; 
+    cout << "Enter the name of the file you would like to sort:" << endl; 
+    cout << "1. randomList.txt" << endl; 
+    cout << "2. Sorted.txt" << endl; 
+    cout << "3. SortedBackwards.txt" << endl; 
+    cout << endl; 
+    cin >> filename; 
+    cout << endl; 
+ 
+    int* arr = new int[ARRAY_SIZE];//dynamically allocate memory for integer array. 
+    readArrayFromFile(arr, filename);//reads contents of the file into the array 
+ 
+    int choice, subChoice; 
+    cout << "Now choose the sorting algorithm you want to sort with:" << endl; 
+    cout << "1) Insertion Sort" << endl; 
+    cout << "2) Quick Sort" << endl; 
+    cout << "3) Count Sort" << endl; 
+    cout << "Select a choice: "; 
+    cin >> choice; 
+    cout << endl; 
+ 
+    switch (choice) { 
+    case 1: 
+        cout << "Choose the type of Insertion Sort:" << endl; 
+        cout << "1. Original Insertion Sort" << endl; 
+        cout << "2. Improved Insertion Sort" << endl; 
+        cout << "Select a choice: "; 
+        cin >> subChoice; 
+        cout << endl; 
+        if (subChoice == 1) { 
+            measureTimeAndPrintResults(arr, ARRAY_SIZE, "Insertion Sort", "Original", 
+insertionSort); 
+        } 
+        else if (subChoice == 2) { 
+            measureTimeAndPrintResults(arr, ARRAY_SIZE, "Insertion Sort", "Improved", 
+insertionSortV2); 
+        } 
+        break; 
+    case 2: 
+        cout << "Choose the position of the pivot:" << endl; 
+        cout << "1. Beginning of the array" << endl; 
+        cout << "2. Middle of the array" << endl; 
+        cout << "3. End of the array" << endl; 
+        cout << "Select a choice: "; 
+ 
+        cin >> subChoice; 
+        cout << endl; 
+        switch (subChoice) { 
+        case 1: 
+            measureTimeAndPrintResults2(arr, ARRAY_SIZE, "Quick Sort", "Pivot as First 
+Element", quickSort); 
+            break; 
+        case 2: 
+            measureTimeAndPrintResults2(arr, ARRAY_SIZE, "Quick Sort", "Pivot as Middle 
+Element", quickSortV2A); 
+            break; 
+        case 3: 
+            measureTimeAndPrintResults2(arr, ARRAY_SIZE, "Quick Sort", "Pivot as Last 
+Element", quickSortV2B); 
+            break; 
+        } 
+        break; 
+    case 3: 
+        cout << "Count Sort:" << endl; 
+        measureTimeAndPrintResults(arr, ARRAY_SIZE, "Count Sort", "", countingSort); 
+        break; 
+    } 
+    delete[] arr; //deallocate the memory created 
+    return 0; 
+} 
+void insertionSort(int arr[], const int size) { 
+    int item; 
+    int pass, insertIndex; 
+    for (pass = 1; pass < size; pass++) { 
+        item = arr[pass]; 
+        insertIndex = pass; 
+        // Shift elements in the sorted portion of the array to the right until finding 
+the correct position for the current item. 
+        // Elements greater than the current item are shifted to the right. 
+        while ((insertIndex > 0) && (arr[insertIndex - 1] > item)) { 
+            arr[insertIndex] = arr[insertIndex - 1]; 
+            insertIndex--; 
+        } 
+        // Insert the current item into its correct position in the sorted portion of the 
+array. 
+        arr[insertIndex] = item; 
+    } 
+} 
+void insertionSortV2(int arr[], const int size) { 
+    int item; 
+    int pass, insertIndex; 
+    bool sorted;//flag to indicate whether array is already sorted 
+    for (pass = 1; pass < size; pass++) { 
+        item = arr[pass]; 
+        insertIndex = pass; 
+        sorted = true; //Assume array is sorted 
+        //comparison condition 
+        while ((insertIndex > 0) && (arr[insertIndex - 1] > item)) { 
+            arr[insertIndex] = arr[insertIndex - 1]; 
+            insertIndex--; 
+            sorted = false; 
+        } 
+        arr[insertIndex] = item; 
+        if (sorted) 
+            break; 
+ 
+    } 
+} 
+ 
+int partition(int arr[], int start, int end) { 
+    // Selecting the first element as the pivot 
+    int pivot = arr[start]; 
+    // Counting the number of elements in the unsorted array less than or equal to the 
+pivot 
+    int count = 0; 
+    for (int i = start + 1; i <= end; i++) { 
+        if (arr[i] <= pivot) { 
+            count++; 
+        } 
+    } 
+    // Calculating the index where the pivot element should be placed in the sorted array 
+    int pivotIndex = start + count; 
+    // Placing the pivot element in its correct position for sorting 
+    swap(arr[pivotIndex], arr[start]); 
+    // Initializing two pointers for partitioning the array 
+    int i = start, j = end; 
+    // Partitioning the array around the pivot index 
+    while (i < pivotIndex && j > pivotIndex) { 
+        // Moving pointer i towards the right until finding an element greater than the 
+pivot 
+        while (arr[i] <= pivot) { 
+            i++; 
+        } 
+        // Moving pointer j towards the left until finding an element less than or equal 
+to the pivot 
+        while (arr[j] > pivot) { 
+            j--; 
+        } 
+        // If there are elements to swap, swap them 
+        if (i < pivotIndex && j > pivotIndex) { 
+            swap(arr[i++], arr[j--]); 
+        } 
+    } 
+    // Returning the index where the pivot element is placed 
+    return pivotIndex; 
+} 
+int partitionV2A(int arr[], int start, int end) { 
+    int pivot = arr[(start + end) / 2]; 
+    // Choose the middle element as the pivot 
+    int i = start - 1; 
+    // Initialize two pointers, i at the start and j at the end 
+    int j = end + 1; 
+    // Loop indefinitely until broken 
+    while (true) { 
+        do { 
+            i++; 
+        } while (arr[i] < pivot); 
+        // Increment i until arr[i] >= pivot 
+        do { 
+            j--; 
+        } while (arr[j] > pivot); 
+        // Decrement j until arr[j] <= pivot 
+        // If i crosses or meets j, partitioning is done 
+        if (i >= j) { 
+            // Return j, which represents the partition point 
+            return j; 
+
+        } 
+        // Swap arr[i] and arr[j] since they're in the wrong partition 
+        swap(arr[i], arr[j]); 
+    } 
+} 
+ 
+int partitionV2B(int arr[], int start, int end) { 
+    int pivot = arr[end]; 
+    // Select the last element as the pivot 
+    int i = (start - 1); 
+    // Initialize a pointer i to track the position of the smaller elements 
+    for (int j = start; j <= end - 1; j++) { 
+        // Iterate through the array from start to end-1 
+        if (arr[j] < pivot) { 
+            // If current element is less than pivot 
+            i++; 
+            // Move the pointer i to the next position 
+            swap(arr[i], arr[j]); 
+            // Swap arr[i] and arr[j] to move smaller elements to the left side of pivot 
+        } 
+    } 
+    swap(arr[i + 1], arr[end]); 
+    // Swap pivot element to its correct position 
+    return (i + 1); 
+    // Return the index of pivot after partitioning 
+} 
+ 
+void quickSort(int arr[], int start, int end) { 
+    // Base case 
+    if (start >= end) 
+        return; 
+    // Partitioning the array 
+    int p = partition(arr, start, end); 
+    // Sorting the left part 
+    quickSort(arr, start, p - 1); 
+    // Sorting the right part 
+    quickSort(arr, p + 1, end); 
+} 
+ 
+void quickSortV2A(int arr[], int start, int end) { 
+    if (start < end) { 
+        // Partition the array with the pivot as the middle element 
+        int partition_index = partitionV2A(arr, start, end); 
+        // Recursively sort the left and right partitions 
+        quickSortV2A(arr, start, partition_index); 
+        // Sort the left partition 
+        quickSortV2A(arr, partition_index + 1, end); 
+        // Sort the right partition 
+    } 
+} 
+ 
+void quickSortV2B(int arr[], int start, int end) { 
+    if (start < end) { 
+        // Partition the array with the pivot as the last element 
+        int pivotIndex = partitionV2B(arr, start, end); 
+        // Recursively sort the left and right partitions 
+        quickSortV2B(arr, start, pivotIndex - 1); 
+        // Sort the left partition 
+        quickSortV2B(arr, pivotIndex + 1, end); 
+        // Sort the right partition 
+ 
+    } 
+} 
+ 
+void countingSort(int arr[], const int size) { 
+    // Find the maximum and minimum elements in the array 
+    int max = arr[0]; 
+    int min = arr[0]; 
+    for (int i = 1; i < size; ++i) { 
+        if (arr[i] > max) { 
+            max = arr[i]; 
+        } 
+        if (arr[i] < min) { 
+            min = arr[i]; 
+        } 
+    } 
+    int range = max - min + 1; 
+    // Create a count array to store the frequency of each element 
+    int* count = new int[range](); 
+    // Initialize the count array with zeros 
+    for (int i = 0; i < range; ++i) { 
+        count[i] = 0; 
+    } 
+    // Store the frequency of each element in the count array 
+    for (int i = 0; i < size; ++i) { 
+        count[arr[i] - min]++; 
+    } 
+    // Update the count array to store the cumulative frequency 
+    for (int i = 1; i < range; ++i) { 
+        count[i] += count[i - 1]; 
+    } 
+    // Create an output array to store the sorted elements 
+    int* output = new int[size]; 
+    // Place each element in its correct sorted position in the output array 
+    for (int i = size - 1; i >= 0; --i) { 
+        output[count[arr[i] - min] - 1] = arr[i]; 
+        count[arr[i] - min]--; 
+    } 
+    // Copy the sorted elements from the output array to the original array 
+    for (int i = 0; i < size; ++i) { 
+        arr[i] = output[i]; 
+    } 
+    // Free the dynamically allocated memory 
+    delete[] count; 
+    delete[] output; 
+}
